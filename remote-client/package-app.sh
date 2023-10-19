@@ -3,4 +3,6 @@ pyinstaller --name 'Syncify' \
             --windowed  \
             --add-data='venv/lib/*/site-packages:.' \
             --path venv/lib/*/site-packages \
+            --add-data='img/syncify.png:img/' \
+            --noconfirm \
             syncify.py

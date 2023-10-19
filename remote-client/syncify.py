@@ -1,7 +1,9 @@
 import tkinter as tk
-import subprocess
 import requests
+from PIL import ImageTk, Image
+import subprocess
 import json
+import os
 
 
 def gettrackLoc():
@@ -95,16 +97,31 @@ def updateLoop():
 
 
 window = tk.Tk()
-window.geometry("600x250")
+# 16:10 landscape aspect ratio
+window.geometry("856x535")
+# 4:3 portrait aspect ratio
+# window.geometry("428x570")
 
-tk.Label(text="Syncify").pack(padx = (10, 10), pady=(40, 20))
+window.title("Syncify")
+
+# image
+baseDir = os.path.dirname(__file__)
+filePath = os.path.join(baseDir, 'img/syncify.png')
+original_image = Image.open(filePath)
+width, height = 200, 200
+resized_image = original_image.resize((width, height), Image.LANCZOS)
+image = ImageTk.PhotoImage(resized_image)
+image_label = tk.Label(image=image)
+image_label.pack(padx=(10, 10), pady=(40, 20))
+
+tk.Label(text="Create a a new session, or join an existing one").pack(padx = (10, 10), pady=(40, 20))
 
 tokenEntry = tk.Entry()
-tokenEntry.insert(0, "enter code")
+tokenEntry.insert(0, "session name")
 tokenEntry.pack(pady=(5, 5))
 
 urlEntry = tk.Entry()
-urlEntry.insert(0, "enter url")
+urlEntry.insert(0, "server url")
 urlEntry.pack(pady=(5, 5))
 
 connectBtn = tk.Button(text="Connect", command=connect)
