@@ -22,7 +22,8 @@ def setPlayerPos(timestamp):
     return result.stdout.strip()
 
 def setTrackID(id):
-    result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to play track ' + id], capture_output=True, text=True)
+    print(f"track set to {id}")
+    result = subprocess.run(["osascript", "-e", f'tell application "Spotify" to play track "{id}"'], capture_output=True, text=True)
     return result.stdout.strip()
 
 session_token = None
@@ -78,11 +79,11 @@ def updateLoop():
             serverChanged = serverUpdate["data"]["changed"]
             if (trackID != serverUpdate["data"]["id"] or abs(float(trackTS) - float(serverUpdate["data"]["timestamp"])) >= 3) and serverChanged and not changed:
                 print("changing this player state...")
-                setPlayerPos(serverUpdate["data"]["timestamp"])
                 setTrackID(serverUpdate["data"]["id"])
+                setPlayerPos(serverUpdate["data"]["timestamp"])
 
-                dataS["data"]["timestamp"] = serverUpdate["data"]["timestamp"]
                 dataS["data"]["id"] = serverUpdate["data"]["id"]
+                dataS["data"]["timestamp"] = serverUpdate["data"]["timestamp"]
 
     except requests.exceptions.RequestException as e:
         print(f"Error sending data to server: {e}")
