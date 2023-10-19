@@ -11,6 +11,11 @@ All clients must share a session name. The server url can be a simple localhost 
 ![client demo](/docs/img/client-filled.png)
 Upon clicking "Connect", you may be prompted to allow Apple Events.
 ![client demo](/docs/img/apple-events.png)
+### run server
+* `cd PATH_TO/syncify/server`
+* `npm install`
+* `node server.js`
+* `ngrok http 3000`
 
 
 ## build client
@@ -22,7 +27,3 @@ Upon clicking "Connect", you may be prompted to allow Apple Events.
 * __build__
 * `chmod +x package-app.sh`
 * `./package-app.sh`
-
-## build server
-* `cd PATH_TO/syncify/server`
-* `npm install`

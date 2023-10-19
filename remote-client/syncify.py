@@ -18,6 +18,10 @@ def getPlayerState():
     result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to get player state'], capture_output=True, text=True)
     return result.stdout.strip()
 
+def togglePlayerState():
+    result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to playpause'], capture_output=True, text=True)
+    return result.stdout.strip()
+
 def setPlayerPos(timestamp):
     print(f"this player set to {timestamp}")
     result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to set player position to ' + str(int(float(timestamp)))], capture_output=True, text=True)
@@ -77,7 +81,7 @@ def updateLoop():
         print("Response:", response.text)
         serverUpdate = json.loads(response.text)
 
-        if serverUpdate != None:
+        if serverUpdate != None and serverUpdate["data"]["timestamp"] != "missing value":
             serverChanged = serverUpdate["data"]["changed"]
             if (trackID != serverUpdate["data"]["id"] or abs(float(trackTS) - float(serverUpdate["data"]["timestamp"])) >= 3) and serverChanged and not changed:
                 print("changing this player state...")
@@ -86,6 +90,8 @@ def updateLoop():
 
                 dataS["data"]["id"] = serverUpdate["data"]["id"]
                 dataS["data"]["timestamp"] = serverUpdate["data"]["timestamp"]
+            # if (serverUpdate["data"]["player-state"] != getPlayerState()):
+            #     togglePlayerState()
 
     except requests.exceptions.RequestException as e:
         print(f"Error sending data to server: {e}")
