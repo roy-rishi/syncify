@@ -34,27 +34,44 @@ def setTrackID(id):
 
 session_token = None
 server_url = None
+client_id = None
 lastUpdate = None
+takeControlNow = False
 def connect():
     global session_token
     global server_url
+    global client_id
 
+    print("connecting to server...")
     session_token = tokenEntry.get()
     print(urlEntry.get())
-    server_url = urlEntry.get() + "/receive-timestamp"
+    server_url = urlEntry.get()
     print(session_token)
     print(server_url)
 
-    print("connecting to server...")
+    response = requests.get(server_url + "/connect")
+    client_id = json.loads(response.text)["clientId"]
+    print("client id: " + str(client_id))
+
+def takeControl():
+    global takeControlNow
+    print("taking control...")
+    takeControlNow = True
 
 
 def updateLoop():
     global lastUpdate
+    global takeControlNow
 
     print("\nsyncing...")
     if session_token == None or server_url == None:
-        window.after(1000, updateLoop)
+        window.after(5000, updateLoop)
         return None
+    
+    # get controller
+    response = requests.post(server_url + "/get-controller", headers={"Content-Type": "application/json"}, data=json.dumps({"session_token": session_token, "client_id": client_id}))
+    controller = response.text
+    print("controller: " + controller)
 
     trackTS = gettrackLoc()
     trackID = gettrackID()
@@ -64,49 +81,61 @@ def updateLoop():
     print(f"player state: {playerState}")
     print(f"server url  : {server_url}")
 
-    # send to server
-    changed = lastUpdate != None and (trackID != lastUpdate["data"]["id"] or abs(float(trackTS) - float(lastUpdate["data"]["timestamp"])) >= 3)
-    print("changed: " + str(changed))
     dataS = {"session_token": session_token,
-             "data": {
-                 "timestamp": str(trackTS),
-                 "id": str(trackID),
-                 "player-state": str(playerState),
-                 "changed": changed
-                 }
+            "timestamp": str(trackTS),
+            "id": str(trackID),
+            "player-state": str(playerState),
+            "controller": client_id
             }
+    print(dataS)
 
-    try:
-        response = requests.post(server_url, headers={"Content-Type": "application/json"}, data=json.dumps(dataS))
-        print("Response:", response.text)
-        serverUpdate = json.loads(response.text)
+    # this client is the controller
+    if int(response.text) == client_id or takeControlNow:
+        print("this is the controller")
+        takeControlNow = False
 
-        if serverUpdate != None and serverUpdate["data"]["timestamp"] != "missing value":
-            serverChanged = serverUpdate["data"]["changed"]
-            if (trackID != serverUpdate["data"]["id"] or abs(float(trackTS) - float(serverUpdate["data"]["timestamp"])) >= 3) and serverChanged and not changed:
-                print("changing this player state...")
-                setTrackID(serverUpdate["data"]["id"])
-                setPlayerPos(serverUpdate["data"]["timestamp"])
+        try:
+            response = requests.post(server_url + "/send-timestamp", headers={"Content-Type": "application/json"}, data=json.dumps(dataS))
+            # print("response:", response.text)
+            # input("line 96")
+            # serverUpdate = json.loads(response.text)
+        except requests.exceptions.RequestException as e:
+            print(f"error sending data to server: {e}")
 
-                dataS["data"]["id"] = serverUpdate["data"]["id"]
-                dataS["data"]["timestamp"] = serverUpdate["data"]["timestamp"]
-            # if (serverUpdate["data"]["player-state"] != getPlayerState()):
-            #     togglePlayerState()
+    # this client is not the controller
+    else:
+        print("this is NOT the controller")
+        try:
+            response = requests.post(server_url + "/get-timestamp", headers={"Content-Type": "application/json"}, data=json.dumps({"session_token": session_token}))
+            print("response:", response.text)
+            serverUpdate = json.loads(response.text)
 
-    except requests.exceptions.RequestException as e:
-        print(f"Error sending data to server: {e}")
+            if serverUpdate != None and serverUpdate["timestamp"] != "missing value":
+                if trackID != serverUpdate["id"]:
+                    print("changing this player track...")
+                    setTrackID(serverUpdate["id"])
+                    dataS["id"] = serverUpdate["id"]
+                if abs(float(trackTS) - float(serverUpdate["timestamp"])) >= 3:
+                    print("changing this player timestamp...")
+                    setPlayerPos(serverUpdate["timestamp"])
+                    dataS["timestamp"] = serverUpdate["timestamp"]
+                if playerState != serverUpdate["player-state"]:
+                    togglePlayerState()
+
+        except requests.exceptions.RequestException as e:
+            print(f"error sending data to server: {e}")
 
     lastUpdate = dataS
 
-    window.after(1000, updateLoop)
+    window.after(5000, updateLoop)
     return None
 
 
 window = tk.Tk()
 # 16:10 landscape aspect ratio
-window.geometry("856x535")
+# window.geometry("856x535")
 # 4:3 portrait aspect ratio
-# window.geometry("428x570")
+window.geometry("428x570")
 
 window.title("Syncify")
 
@@ -118,6 +147,7 @@ width, height = 200, 200
 resized_image = original_image.resize((width, height), Image.LANCZOS)
 image = ImageTk.PhotoImage(resized_image)
 image_label = tk.Label(image=image)
+# UNCOMMENT
 image_label.pack(padx=(10, 10), pady=(40, 20))
 
 tk.Label(text="Create a a new session, or join an existing one").pack(padx = (10, 10), pady=(40, 20))
@@ -127,11 +157,15 @@ tokenEntry.insert(0, "session name")
 tokenEntry.pack(pady=(5, 5))
 
 urlEntry = tk.Entry()
-urlEntry.insert(0, "server url")
+# urlEntry.insert(0, "server url")
+urlEntry.insert(0, "https://a93f-76-146-33-51.ngrok-free.app")
 urlEntry.pack(pady=(5, 5))
 
 connectBtn = tk.Button(text="Connect", command=connect)
-connectBtn.pack(pady=(5, 20))
+connectBtn.pack(pady=(5, 5))
+
+controlBtn = tk.Button(text="Take Control", command=takeControl)
+controlBtn.pack(pady=(5, 20))
 
 updateLoop()
 
