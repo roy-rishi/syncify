@@ -5,6 +5,7 @@ import subprocess
 import json
 import os
 
+UPDATE_DELAY=1000
 
 def gettrackLoc():
     result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to get player position'], capture_output=True, text=True)
@@ -58,20 +59,27 @@ def takeControl():
     print("taking control...")
     takeControlNow = True
 
-
 def updateLoop():
     global lastUpdate
     global takeControlNow
 
     print("\nsyncing...")
     if session_token == None or server_url == None:
-        window.after(5000, updateLoop)
+        window.after(UPDATE_DELAY, updateLoop)
         return None
     
     # get controller
-    response = requests.post(server_url + "/get-controller", headers={"Content-Type": "application/json"}, data=json.dumps({"session_token": session_token, "client_id": client_id}))
-    controller = response.text
-    print("controller: " + controller)
+    try:
+        response = requests.post(server_url + "/get-controller", headers={"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}, data=json.dumps({"session_token": session_token, "client_id": client_id}))
+        print(f"controller response: {response.text}")
+        controller = int(response.text)
+    except requests.exceptions.RequestException as e:
+        print(f"error sending data to server: {e}")
+        controller = client_id
+    except ValueError as e:
+        print(f"error parsing as int: {e}")
+        controller = client_id
+    print("controller: " + str(controller))
 
     trackTS = gettrackLoc()
     trackID = gettrackID()
@@ -84,33 +92,39 @@ def updateLoop():
     dataS = {"session_token": session_token,
             "timestamp": str(trackTS),
             "id": str(trackID),
-            "player-state": str(playerState),
-            "controller": client_id
+            "player-state": str(playerState)
             }
     print(dataS)
 
-    # this client is the controller
-    if int(response.text) == client_id or takeControlNow:
-        print("this is the controller")
-        takeControlNow = False
 
+    # this client is the controller
+    if controller == client_id:
+        print("this is the controller")
         try:
-            response = requests.post(server_url + "/send-timestamp", headers={"Content-Type": "application/json"}, data=json.dumps(dataS))
-            # print("response:", response.text)
-            # input("line 96")
-            # serverUpdate = json.loads(response.text)
+            response = requests.post(server_url + "/send-timestamp", headers={"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}, data=json.dumps(dataS))
         except requests.exceptions.RequestException as e:
             print(f"error sending data to server: {e}")
+    
+    # make this client the controller
+    elif takeControlNow:
+        print("making this client the controller")
+        takeControlNow = False
+        try:
+            response = requests.post(server_url + "/set-controller", headers={"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}, data=json.dumps({"session_token": session_token, "client_id": client_id}))
+            # display control status
+            controlIndicator.config(text="Following along to you")
+        except requests.exceptions.RequestException as e:
+            print(f"error sending data to server: {e}")        
 
     # this client is not the controller
     else:
         print("this is NOT the controller")
         try:
-            response = requests.post(server_url + "/get-timestamp", headers={"Content-Type": "application/json"}, data=json.dumps({"session_token": session_token}))
+            response = requests.post(server_url + "/get-timestamp", headers={"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}, data=json.dumps({"session_token": session_token}))
             print("response:", response.text)
             serverUpdate = json.loads(response.text)
 
-            if serverUpdate != None and serverUpdate["timestamp"] != "missing value":
+            if serverUpdate != None and serverUpdate["timestamp"] != "missing value" and trackTS != "missing value":
                 if trackID != serverUpdate["id"]:
                     print("changing this player track...")
                     setTrackID(serverUpdate["id"])
@@ -124,10 +138,12 @@ def updateLoop():
 
         except requests.exceptions.RequestException as e:
             print(f"error sending data to server: {e}")
+        
+        controlIndicator.config(text="Following along with others")
 
     lastUpdate = dataS
 
-    window.after(5000, updateLoop)
+    window.after(UPDATE_DELAY, updateLoop)
     return None
 
 
@@ -135,11 +151,11 @@ window = tk.Tk()
 # 16:10 landscape aspect ratio
 # window.geometry("856x535")
 # 4:3 portrait aspect ratio
-window.geometry("428x570")
+window.geometry("428x610")
 window.title("Syncify")
 
 # title
-title = tk.Label(text="Syncify", font=("Avenir Next", 60))
+title = tk.Label(text="Syncify", font=("Avenir Next", 60), foreground="#b8945e")
 title.pack(padx = (5, 5), pady=(40, 5))
 
 # image
@@ -154,19 +170,24 @@ image_label.pack(padx=(5, 5), pady=(15, 0))
 
 tk.Label(text="Start a new session\nor connect to an existing one", font=("Arial", 16)).pack(padx = (5, 5), pady=(5, 5))
 
+# inputs
 tokenEntry = tk.Entry()
 tokenEntry.insert(0, "session name")
-tokenEntry.pack(pady=(5, 5))
+tokenEntry.pack(pady=(10, 3))
 
 urlEntry = tk.Entry()
-urlEntry.insert(0, "server url")
-urlEntry.pack(pady=(5, 5))
+urlEntry.insert(0, "https://a93f-76-146-33-51.ngrok-free.app")
+urlEntry.pack(pady=(3, 3))
 
 connectBtn = tk.Button(text="Connect", command=connect)
-connectBtn.pack(pady=(5, 5))
+connectBtn.pack(pady=(2, 5))
 
-controlBtn = tk.Button(text="Take Control", command=takeControl)
-controlBtn.pack(pady=(5, 20))
+# indicate if this client has control
+controlIndicator = tk.Label(text=" ", font=("Arial", 18))
+controlIndicator.pack(padx = (5, 5), pady=(25, 3))
+
+controlBtn = tk.Button(text="Control", command=takeControl)
+controlBtn.pack(pady=(2, 10))
 
 updateLoop()
 

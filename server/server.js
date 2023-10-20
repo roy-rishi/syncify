@@ -5,6 +5,7 @@ const app = express();
 const port = 3000;
 
 var lastUpdate = [];
+var controller = [];
 var assignedTo = -1;
 
 function updateLast(array, newData) {
@@ -22,7 +23,6 @@ function updateLast(array, newData) {
 function responseInfo(array, token) {
     for (let i = 0; i < array.length; i++) {
         if (array[i]["session_token"] === token) {
-            // console.log(array[i]);
             return array[i];
         }
     }
@@ -30,6 +30,13 @@ function responseInfo(array, token) {
 }
 
 app.use(bodyParser.json());
+
+app.get('/connect', (req, res) => {
+    let clientId = assignedTo + 1;
+    assignedTo++;
+    console.log('\nconnecting client ', clientId);
+    res.send({"clientId": clientId});
+});
 
 app.post('/send-timestamp', (req, res) => {
     console.log("\n/send-timestamp")
@@ -58,19 +65,25 @@ app.post('/get-controller', (req, res) => {
         lastUpdate.push({"session_token": receivedData["session_token"],
         "timestamp": "missing value",
         "id": "missing value",
-        "player-state": "missing value",
-        "controller": receivedData["client_id"]
+        "player-state": "missing value"
        })
     }
-    console.log("controller is " + responseInfo(lastUpdate, receivedData["session_token"])["controller"]);
-    res.send(JSON.stringify(responseInfo(lastUpdate, receivedData["session_token"])["controller"]));
+    if (responseInfo(controller, receivedData["session_token"]) == null) {
+       controller.push({"session_token": receivedData["session_token"],
+                        "client_id": receivedData["client_id"]})
+    }
+
+    console.log("controller is " + responseInfo(controller, receivedData["session_token"])["client_id"]);
+    res.send(JSON.stringify(responseInfo(controller, receivedData["session_token"])["client_id"]));
 });
 
-app.get('/connect', (req, res) => {
-    let clientId = assignedTo + 1;
-    assignedTo++;
-    console.log('\nconnecting client ', clientId);
-    res.send({"clientId": clientId});
+app.post('/set-controller', (req, res) => {
+    console.log("\n/set-controller")
+    const receivedData = req.body;
+    console.log('received:', receivedData);
+    
+    updateLast(controller, receivedData);
+    res.send(JSON.stringify(responseInfo(lastUpdate, receivedData["session_token"])));
 });
 
 app.listen(port, () => {
