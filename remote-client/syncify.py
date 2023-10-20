@@ -136,29 +136,30 @@ window = tk.Tk()
 # window.geometry("856x535")
 # 4:3 portrait aspect ratio
 window.geometry("428x570")
-
 window.title("Syncify")
+
+# title
+title = tk.Label(text="Syncify", font=("Avenir Next", 60))
+title.pack(padx = (5, 5), pady=(40, 5))
 
 # image
 baseDir = os.path.dirname(__file__)
 filePath = os.path.join(baseDir, 'img/syncify.png')
 original_image = Image.open(filePath)
-width, height = 200, 200
+width, height = 180, 180
 resized_image = original_image.resize((width, height), Image.LANCZOS)
 image = ImageTk.PhotoImage(resized_image)
 image_label = tk.Label(image=image)
-# UNCOMMENT
-image_label.pack(padx=(10, 10), pady=(40, 20))
+image_label.pack(padx=(5, 5), pady=(15, 0))
 
-tk.Label(text="Create a a new session, or join an existing one").pack(padx = (10, 10), pady=(40, 20))
+tk.Label(text="Start a new session\nor connect to an existing one", font=("Arial", 16)).pack(padx = (5, 5), pady=(5, 5))
 
 tokenEntry = tk.Entry()
 tokenEntry.insert(0, "session name")
 tokenEntry.pack(pady=(5, 5))
 
 urlEntry = tk.Entry()
-# urlEntry.insert(0, "server url")
-urlEntry.insert(0, "https://a93f-76-146-33-51.ngrok-free.app")
+urlEntry.insert(0, "server url")
 urlEntry.pack(pady=(5, 5))
 
 connectBtn = tk.Button(text="Connect", command=connect)
