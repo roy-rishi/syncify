@@ -33,6 +33,9 @@ def setTrackID(id):
     result = subprocess.run(["osascript", "-e", f'tell application "Spotify" to play track "{id}"'], capture_output=True, text=True)
     return result.stdout.strip()
 
+def errorDialog(error):
+    result = subprocess.run(["osascript", "-e", f'display alert "An error occured" message "{error}" as critical'], capture_output=True, text=True)
+
 session_token = None
 server_url = None
 client_id = None
@@ -75,9 +78,11 @@ def updateLoop():
         controller = int(response.text)
     except requests.exceptions.RequestException as e:
         print(f"error sending data to server: {e}")
+        errorDialog(e)
         controller = client_id
     except ValueError as e:
         print(f"error parsing as int: {e}")
+        errorDialog(e)
         controller = client_id
     print("controller: " + str(controller))
 
@@ -102,8 +107,10 @@ def updateLoop():
         print("this is the controller")
         try:
             response = requests.post(server_url + "/send-timestamp", headers={"Content-Type": "application/json", "ngrok-skip-browser-warning": "true"}, data=json.dumps(dataS))
+            controlIndicator.config(text="Following along to you")
         except requests.exceptions.RequestException as e:
             print(f"error sending data to server: {e}")
+            errorDialog(e)
     
     # make this client the controller
     elif takeControlNow:
@@ -114,7 +121,8 @@ def updateLoop():
             # display control status
             controlIndicator.config(text="Following along to you")
         except requests.exceptions.RequestException as e:
-            print(f"error sending data to server: {e}")        
+            print(f"error sending data to server: {e}")       
+            errorDialog(e)
 
     # this client is not the controller
     else:
@@ -129,15 +137,20 @@ def updateLoop():
                     print("changing this player track...")
                     setTrackID(serverUpdate["id"])
                     dataS["id"] = serverUpdate["id"]
-                if abs(float(trackTS) - float(serverUpdate["timestamp"])) >= 3:
+
                     print("changing this player timestamp...")
-                    setPlayerPos(serverUpdate["timestamp"])
+                    setPlayerPos(float(serverUpdate["timestamp"]) + 1)
+                    dataS["timestamp"] = serverUpdate["timestamp"]
+                if abs(float(trackTS) - float(serverUpdate["timestamp"])) >= 5:
+                    print("changing this player timestamp...")
+                    setPlayerPos(float(serverUpdate["timestamp"]) + 1)
                     dataS["timestamp"] = serverUpdate["timestamp"]
                 if playerState != serverUpdate["player-state"]:
                     togglePlayerState()
 
         except requests.exceptions.RequestException as e:
             print(f"error sending data to server: {e}")
+            errorDialog(e)
         
         controlIndicator.config(text="Following along with others")
 
@@ -176,7 +189,7 @@ tokenEntry.insert(0, "session name")
 tokenEntry.pack(pady=(10, 3))
 
 urlEntry = tk.Entry()
-urlEntry.insert(0, "https://a93f-76-146-33-51.ngrok-free.app")
+urlEntry.insert(0, "server url")
 urlEntry.pack(pady=(3, 3))
 
 connectBtn = tk.Button(text="Connect", command=connect)
