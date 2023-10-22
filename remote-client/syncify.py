@@ -5,7 +5,7 @@ import subprocess
 import json
 import os
 
-UPDATE_DELAY=1000
+UPDATE_DELAY=2500
 
 def gettrackLoc():
     result = subprocess.run(["osascript", "-e", 'tell application "Spotify" to get player position'], capture_output=True, text=True)
