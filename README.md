@@ -20,6 +20,7 @@ Upon clicking "Connect", you may be prompted to allow Apple Events.
 
 ## build client
 * __dependencies__
+* macOS
 * `cd PATH_TO/syncify/remote-client`
 * `python3 -m venv venv`
 * `source venv/bin/activate`
