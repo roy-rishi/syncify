@@ -6,8 +6,7 @@ The client app must be ran on each device. Whichever client starts first chooses
 
 The server must be run on a central computer or on any one of the devices running the client app and should be accessible by both client apps.
 ### run clients
-![client demo](/docs/img/client.png)
-All clients must share a session name. The server url can be a simple localhost for using with devices on the same network (http://localhost:3000), or an [ngrok](https://ngrok.com/) tunnel. 
+All clients must share a session name. The server url can be a public ip for using with devices on the same network, or a proxy tunnel. 
 ![client demo](/docs/img/client-filled.png)
 Upon clicking "Connect", you may be prompted to allow Apple Events.
 ![client demo](/docs/img/apple-events.png)
