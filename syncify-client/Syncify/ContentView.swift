@@ -10,7 +10,6 @@ import Foundation
 
 struct ContentView: View {
     @State private var sessionToken: String = ""
-//    @State private var serverUrl: String = ""
     @AppStorage("serverUrl") private var serverUrl: String = ""
     @State private var clientId: Int = -1
     @State private var controller: String = "none"
@@ -46,22 +45,6 @@ struct ContentView: View {
                 .frame(width: 180)
                 .disableAutocorrection(true)
                 .padding(.bottom, 25)
-            
-//            Button(action: {
-//                Task {
-//                    connectLoading = true
-//                    do {
-//                        clientId = try await serverConnect()
-//                        connectLoading = false
-//                    } catch {
-//                        print("Error fetching data: \(error)")
-//                        connectLoading = false
-//                    }
-//                }
-//            }, label: {
-//                Text("Connect")
-//            })
-//            .disabled(connectLoading)
 
             Button(action: {
                 Task {
@@ -101,7 +84,7 @@ struct ContentView: View {
         }
     }
     func updateLoop() async throws {
-        var p = print("syncing...")
+        print("syncing...")
         
         if sessionToken == "" || serverUrl == "" {
             return
@@ -111,10 +94,10 @@ struct ContentView: View {
         let trackTS: Double = Double(runApplescript(script: "tell application \"Spotify\" to return player position") ?? "") ?? 0
         let trackId: String = runApplescript(script: "tell application \"Spotify\" to return id of current track") ?? ""
         let playerState: String = runApplescript(script: "tell application \"Spotify\" to return player state") ?? ""
-        p = print("track loc   :" + String(trackTS))
-        p = print("track id    :" + trackId)
-        p = print("player state:" + playerState)
-        p = print("server url  :" + serverUrl)
+        print("track loc   :" + String(trackTS))
+        print("track id    :" + trackId)
+        print("player state:" + playerState)
+        print("server url  :" + serverUrl)
         
         var dataS: [String: Any] = [
             "session_token": sessionToken,
@@ -122,36 +105,35 @@ struct ContentView: View {
             "id": String(trackId),
             "player-state": String(playerState)
         ]
-        p = print(dataS)
+        print(dataS)
         
 //        this client is the controller
         if controller == String(clientId) {
-            p = print("this is the controller")
+            print("this is the controller")
             try await sendTimestamp(dataS: dataS)
             statusMessage = "Following along to you"
         } else if takeControlNow {
 //            make this client the controller
-            p = print("making this client the controller")
+            print("making this client the controller")
             takeControlNow = false
             try await setController()
             statusMessage = "Following along to you"
         } else {
 //            this client is not the controller
-            p = print("this is NOT the controller")
+            print("this is NOT the controller")
             let serverUpdate = try await getTimestamp()
-//            removed: serverUpdate.timestamp != "missing value"
             if serverUpdate != nil && String(trackTS) != "missing value" {
                 if trackId != serverUpdate.id {
-                    p = print("changing this player track...")
+                    print("changing this player track...")
                     print(serverUpdate.id)
                     runApplescript(script: "tell application \"Spotify\" to play track \"" + serverUpdate.id + "\"")
                     dataS["id"] = serverUpdate.id
-                    p = print("changing this player timestamp...")
+                    print("changing this player timestamp...")
                     runApplescript(script: "tell application \"Spotify\" to set player position to " + serverUpdate.timestamp)
                     dataS["timestamp"] = serverUpdate.timestamp
                 }
                 if abs(trackTS - (Double(serverUpdate.timestamp) ?? 0)) >= 3 {
-                    p = print("changing this player timestamp...")
+                    print("changing this player timestamp...")
                     runApplescript(script: "tell application \"Spotify\" to set player position to " + serverUpdate.timestamp)
                     dataS["timestamp"] = serverUpdate.timestamp
                 }
@@ -162,7 +144,7 @@ struct ContentView: View {
             }
         }
         UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
-        p = print("")
+        print("")
     }
 
 
@@ -184,7 +166,7 @@ struct ContentView: View {
         do {
             let (data, _) = try await URLSession.shared.data(from: url)
             let res = try JSONDecoder().decode(ConnectReq.self, from: data)
-            var p = print("client id: " + String(res.clientId))
+            print("client id: " + String(res.clientId))
             return res.clientId
         } catch {
             throw FetcherError.invalidURL
@@ -211,7 +193,7 @@ struct ContentView: View {
         do {
             let (data, _) = try await URLSession.shared.data(for: request)
             if let responseString = String(data: data, encoding: .utf8) {
-                var p = print("controller: " + responseString)
+                print("controller: " + responseString)
                 return responseString
             } else {
                 throw FetcherError.invalidResponse
@@ -248,7 +230,7 @@ struct ContentView: View {
     
     func takeControl() {
         takeControlNow = true
-        var p = print("will take control")
+        print("will take control")
     }
     
     func setController() async throws {
@@ -308,7 +290,6 @@ struct ContentView: View {
             print("Response:", jsonString ?? "Empty response")
 
             let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any]
-//            print("Parsed JSON:", json ?? "Failed to parse")
 
             let decoder = JSONDecoder()
             let res = try decoder.decode(timestampReq.self, from: data)
@@ -333,10 +314,6 @@ struct ContentView: View {
             return output
         }
         return "failure to run applescript"
-    }
-
-    func setTrackId(id: String) {
-        var p = print("simulating setting track id to " + id)
     }
 }
 
