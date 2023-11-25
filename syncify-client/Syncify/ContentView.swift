@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var controlLoading = false
     @State private var statusMessage: String = "Disconnected"
     @State private var lastServerUrl: String = ""
+    @State private var lastSessionToken: String = ""
 
     var body: some View {
         VStack {
@@ -91,10 +92,11 @@ struct ContentView: View {
             return
         }
         
-        if serverUrl != lastServerUrl {
+        if serverUrl != lastServerUrl || sessionToken != lastSessionToken{
             try await serverConnect()
             UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
             lastServerUrl = serverUrl
+            lastSessionToken = sessionToken
         }
         
         controller = try await getController()
