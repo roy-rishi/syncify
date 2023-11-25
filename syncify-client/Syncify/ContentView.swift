@@ -44,12 +44,21 @@ struct ContentView: View {
                       text: $sessionToken)
                 .frame(width: 180)
                 .padding(.bottom, 5)
-            TextField("server url",
-                      text: $serverUrl)
-                .frame(width: 180)
-                .disableAutocorrection(true)
-                .padding(.bottom, 25)
-
+//            if not compiled with hardcoded server url, prompt user
+            if Config.SERVER_URL == "" {
+                TextField("server url",
+                          text: $serverUrl)
+                    .frame(width: 180)
+                    .disableAutocorrection(true)
+                    .padding(.bottom, 5)
+            }
+            
+            Text(statusMessage)
+                .frame(width: 300)
+                .padding(5)
+                .padding(.top, 20)
+                .font(.title2)
+            
             Button(action: {
                 Task {
                     controlLoading = true
@@ -60,12 +69,6 @@ struct ContentView: View {
                 Text("Take Control")
             })
             .disabled(controlLoading)
-            
-            Text(statusMessage)
-                .frame(width: 300)
-                .padding(5)
-                .font(.title2)
-
         }
         .onAppear {
             if let savedServerUrl = UserDefaults.standard.string(forKey: "serverUrl") {
@@ -75,13 +78,12 @@ struct ContentView: View {
             
 //            request notifcation permission
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
-                        if granted {
-                            print("Notification authorization granted")
-                        } else if let error = error {
-                            print("Error: \(error.localizedDescription)")
-                        }
-                    }
-
+                if granted {
+                    print("Notification authorization granted")
+                } else if let error = error {
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
         }
     }
     
