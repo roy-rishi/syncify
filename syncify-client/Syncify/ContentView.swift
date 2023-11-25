@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Foundation
+import UserNotifications
 
 struct ContentView: View {
     @State private var sessionToken: String = ""
@@ -18,6 +19,7 @@ struct ContentView: View {
     @State private var connectLoading = false
     @State private var controlLoading = false
     @State private var statusMessage: String = "Disconnected"
+
     @State private var lastServerUrl: String = ""
     @State private var lastSessionToken: String = ""
 
@@ -70,6 +72,16 @@ struct ContentView: View {
                 serverUrl = savedServerUrl
             }
             self.startUpdateLoop()
+            
+//            request notifcation permission
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { granted, error in
+                        if granted {
+                            print("Notification authorization granted")
+                        } else if let error = error {
+                            print("Error: \(error.localizedDescription)")
+                        }
+                    }
+
         }
     }
     
@@ -323,6 +335,24 @@ struct ContentView: View {
             return output
         }
         return "failure to run applescript"
+    }
+    
+    func sendNotification(subtitle: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = "Syncify"
+        content.subtitle = subtitle
+        content.body = body
+        content.sound = UNNotificationSound.default
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
+            
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error.localizedDescription)")
+            }
+        }
     }
 }
 
