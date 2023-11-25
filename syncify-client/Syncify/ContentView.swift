@@ -18,6 +18,7 @@ struct ContentView: View {
     @State private var connectLoading = false
     @State private var controlLoading = false
     @State private var statusMessage: String = "Disconnected"
+    @State private var lastServerUrl: String = ""
 
     var body: some View {
         VStack {
@@ -90,6 +91,12 @@ struct ContentView: View {
             return
         }
         
+        if serverUrl != lastServerUrl {
+            try await serverConnect()
+            UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
+            lastServerUrl = serverUrl
+        }
+        
         controller = try await getController()
         let trackTS: Double = Double(runApplescript(script: "tell application \"Spotify\" to return player position") ?? "") ?? 0
         let trackId: String = runApplescript(script: "tell application \"Spotify\" to return id of current track") ?? ""
@@ -143,7 +150,6 @@ struct ContentView: View {
                 statusMessage = "Following along with others"
             }
         }
-        UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
         print("")
     }
 
@@ -167,6 +173,7 @@ struct ContentView: View {
             let (data, _) = try await URLSession.shared.data(from: url)
             let res = try JSONDecoder().decode(ConnectReq.self, from: data)
             print("client id: " + String(res.clientId))
+            clientId = res.clientId
             return res.clientId
         } catch {
             throw FetcherError.invalidURL
