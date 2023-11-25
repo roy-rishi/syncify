@@ -15,5 +15,18 @@ struct SyncifyApp: App {
             .frame(width: 428, height: 610)
         }
         .defaultSize(width: 428, height: 610)
+
+//        MenuBarExtra("Syncify") {
+//            Button("Take Control") {
+//                
+//            }
+//            .keyboardShortcut("t")
+//            Divider()
+//            Button("Quit") {
+//                NSApplication.shared.terminate(nil)
+//            }
+//            .keyboardShortcut("q")
+//
+//        }
     }
 }
