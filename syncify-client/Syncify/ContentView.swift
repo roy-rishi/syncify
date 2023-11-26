@@ -20,8 +20,8 @@ struct ContentView: View {
     @State private var controlLoading = false
     @State private var statusMessage: String = "Disconnected"
 
-    @State private var lastServerUrl: String = ""
-    @State private var lastSessionToken: String = ""
+    @State private var lastServerUrl: String = "last"
+    @State private var lastSessionToken: String = "last"
 
     var body: some View {
         VStack {
@@ -72,8 +72,12 @@ struct ContentView: View {
         }
         .frame(width: 428, height: 610)
         .onAppear {
-            if let savedServerUrl = UserDefaults.standard.string(forKey: "serverUrl") {
-                serverUrl = savedServerUrl
+            if Config.SERVER_URL == "" {
+                if let savedServerUrl = UserDefaults.standard.string(forKey: "serverUrl") {
+                    serverUrl = savedServerUrl
+                }
+            } else {
+                serverUrl = Config.SERVER_URL
             }
             self.startUpdateLoop()
             
@@ -102,14 +106,18 @@ struct ContentView: View {
     }
     func updateLoop() async throws {
         print("syncing...")
+        print("server url: " + serverUrl)
         
         if sessionToken == "" || serverUrl == "" {
             return
         }
         
-        if serverUrl != lastServerUrl || sessionToken != lastSessionToken{
+        if serverUrl != lastServerUrl || sessionToken != lastSessionToken {
+            print("reconnecting...")
             try await serverConnect()
-            UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
+            if Config.SERVER_URL == "" {
+                UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
+            }
             lastServerUrl = serverUrl
             lastSessionToken = sessionToken
         }
