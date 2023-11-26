@@ -11,21 +11,10 @@ import SwiftUI
 @main
 struct SyncifyApp: App {
     @available(macOS 11.0, *)
+
     var body: some Scene {
         WindowGroup {
             ContentView()
         }
-//        MenuBarExtra("Syncify") {
-//            Button("Take Control") {
-//                
-//            }
-//            .keyboardShortcut("t")
-//            Divider()
-//            Button("Quit") {
-//                NSApplication.shared.terminate(nil)
-//            }
-//            .keyboardShortcut("q")
-//
-//        }
     }
 }
