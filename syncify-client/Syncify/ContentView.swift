@@ -11,7 +11,7 @@ import UserNotifications
 
 struct ContentView: View {
     @State private var sessionToken: String = ""
-    @AppStorage("serverUrl") private var serverUrl: String = ""
+    @State private var serverUrl: String = Config.SERVER_URL
     @State private var clientId: Int = -1
     @State private var controller: String = "none"
     @State private var takeControlNow: Bool = false
@@ -22,6 +22,7 @@ struct ContentView: View {
 
     @State private var lastServerUrl: String = "last"
     @State private var lastSessionToken: String = "last"
+    @State private var lastTimestamp: Double = 0.0
 
     var body: some View {
         VStack {
@@ -44,7 +45,7 @@ struct ContentView: View {
                       text: $sessionToken)
                 .frame(width: 180)
                 .padding(.bottom, 5)
-//            if not compiled with hardcoded server url, prompt user
+            
             if Config.SERVER_URL == "" {
                 TextField("server url",
                           text: $serverUrl)
@@ -72,13 +73,7 @@ struct ContentView: View {
         }
         .frame(width: 428, height: 610)
         .onAppear {
-            if Config.SERVER_URL == "" {
-                if let savedServerUrl = UserDefaults.standard.string(forKey: "serverUrl") {
-                    serverUrl = savedServerUrl
-                }
-            } else {
-                serverUrl = Config.SERVER_URL
-            }
+            serverUrl = Config.SERVER_URL
             self.startUpdateLoop()
             
 //            request notifcation permission
@@ -94,7 +89,7 @@ struct ContentView: View {
     
     
     func startUpdateLoop() {
-        Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
             Task {
                 do {
                     try await updateLoop()
@@ -115,9 +110,6 @@ struct ContentView: View {
         if serverUrl != lastServerUrl || sessionToken != lastSessionToken {
             print("reconnecting...")
             try await serverConnect()
-            if Config.SERVER_URL == "" {
-                UserDefaults.standard.set(serverUrl, forKey: "serverUrl")
-            }
             lastServerUrl = serverUrl
             lastSessionToken = sessionToken
         }
@@ -154,6 +146,12 @@ struct ContentView: View {
 //            this client is not the controller
             print("this is NOT the controller")
             let serverUpdate = try await getTimestamp()
+            print("diff: " + String(abs((Double(serverUpdate.timestamp) ?? 0) - lastTimestamp)))
+            if abs((Double(serverUpdate.timestamp) ?? 0) - lastTimestamp) == 0 {
+                statusMessage = "Others are not broadcasting"
+                return;
+            }
+            lastTimestamp = Double(serverUpdate.timestamp) ?? 0
             if serverUpdate != nil && String(trackTS) != "missing value" {
                 if trackId != serverUpdate.id {
                     print("changing this player track...")
@@ -164,7 +162,7 @@ struct ContentView: View {
                     runApplescript(script: "tell application \"Spotify\" to set player position to " + serverUpdate.timestamp)
                     dataS["timestamp"] = serverUpdate.timestamp
                 }
-                if abs(trackTS - (Double(serverUpdate.timestamp) ?? 0)) >= 3 {
+                if abs(trackTS - (Double(serverUpdate.timestamp) ?? 0)) >= 4 {
                     print("changing this player timestamp...")
                     runApplescript(script: "tell application \"Spotify\" to set player position to " + serverUpdate.timestamp)
                     dataS["timestamp"] = serverUpdate.timestamp
