@@ -70,6 +70,7 @@ struct ContentView: View {
             })
             .disabled(controlLoading)
         }
+        .frame(width: 428, height: 610)
         .onAppear {
             if let savedServerUrl = UserDefaults.standard.string(forKey: "serverUrl") {
                 serverUrl = savedServerUrl

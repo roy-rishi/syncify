@@ -7,15 +7,14 @@
 
 import SwiftUI
 
+@available(macOS 11.0, *)
 @main
 struct SyncifyApp: App {
+    @available(macOS 11.0, *)
     var body: some Scene {
         WindowGroup {
             ContentView()
-            .frame(width: 428, height: 610)
         }
-        .defaultSize(width: 428, height: 610)
-
 //        MenuBarExtra("Syncify") {
 //            Button("Take Control") {
 //                
