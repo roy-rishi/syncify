@@ -7,7 +7,7 @@ The client app must be ran on each device. Whichever client starts first chooses
 The server must be run on a central computer or on any one of the devices running the client app and should be accessible by both client apps.
 ### run clients
 All clients must share a session name. The server url can be a public ip for using with devices on the same network, or a proxy tunnel. 
-![client demo](/docs/img/client-filled.png)
+![client demo](/docs/img/client.png)
 Upon clicking "Connect", you may be prompted to allow Apple Events.
 ![client demo](/docs/img/apple-events.png)
 ### run server
@@ -20,10 +20,10 @@ Upon clicking "Connect", you may be prompted to allow Apple Events.
 ## build client
 * __dependencies__
 * macOS
-* `cd PATH_TO/syncify/remote-client`
-* `python3 -m venv venv`
-* `source venv/bin/activate`
-* `pip install -r requirements.txt`
-* __build__
-* `chmod +x package-app.sh`
-* `./package-app.sh`
+* uncomment the following and hardcode the server url before building, or uncomment it and leave the string equal to "" to prompt the user for a url
+```
+//struct Config {
+//    static let SERVER_URL = ""
+//}
+```
+* build `syncify-client/` in Xcode
