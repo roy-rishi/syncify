@@ -2,7 +2,7 @@
 Sync spotify players across two or more devices on separate accounts.
 
 ## usage
-The client app must be ran on each device. Whichever client starts first chooses a code and shares it for the other client to use to join the same session. The server can differntiate between different sessions, allowing for concurrent sessions. [DMG installers](https://github.com/roy-rishi/syncify/releases) for macOS are included. Tested on macOS Ventura (13.3 22E252 arm64) and macOS Ventura (13.5.1 22G90 Intel).
+The client app must be ran on each device. Whichever client starts first chooses a code and shares it for the other client to use to join the same session. The server can differntiate between different sessions, allowing for concurrent sessions. [DMG installers](https://github.com/roy-rishi/syncify/releases) for macOS are included, but may not be up to date. Tested on macOS Ventura (13.3 22E252 arm64), macOS Ventura (13.5.1 22G90 Intel), and macOS Monterey (Intel). Compatible with macOS 11.0 and above.
 
 The server must be run on a central computer or on any one of the devices running the client app and should be accessible by both client apps.
 ### run clients
