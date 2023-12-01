@@ -14,12 +14,8 @@ Upon clicking "Connect", you may be prompted to allow Apple Events.
 * `cd PATH_TO/syncify/server`
 * `npm install`
 * `node server.js`
-* `ngrok http 3000`
-
 
 ## build client
-* __dependencies__
-* macOS
 * uncomment the following and hardcode the server url before building, or uncomment it and leave the string equal to "" to leave a textfield for the the user to enter a url. The url will persist between sessions
 ```
 //struct Config {
