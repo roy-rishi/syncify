@@ -1,3 +1,0 @@
-requests==2.27.1
-pyinstaller
-Pillow==10.1.0
