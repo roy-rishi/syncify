@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3A03F20A2B12AAFD009E67A5 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03F2092B12AAFD009E67A5 /* Config.swift */; };
 		3A03F20C2B12AE6B009E67A5 /* Config-TEMPLATE.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A03F20B2B12AE6B009E67A5 /* Config-TEMPLATE.swift */; };
+		3A1083002B1D580E00D48141 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A1082FF2B1D580E00D48141 /* Config.swift */; };
 		3A2D60262B0FED31001D796A /* SyncifyApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D60252B0FED31001D796A /* SyncifyApp.swift */; };
 		3A2D60282B0FED31001D796A /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A2D60272B0FED31001D796A /* ContentView.swift */; };
 		3A2D602A2B0FED32001D796A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3A2D60292B0FED32001D796A /* Assets.xcassets */; };
@@ -16,8 +16,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		3A03F2092B12AAFD009E67A5 /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		3A03F20B2B12AE6B009E67A5 /* Config-TEMPLATE.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Config-TEMPLATE.swift"; sourceTree = "<group>"; };
+		3A1082FF2B1D580E00D48141 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		3A2D60222B0FED31001D796A /* Syncify.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Syncify.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3A2D60252B0FED31001D796A /* SyncifyApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncifyApp.swift; sourceTree = "<group>"; };
 		3A2D60272B0FED31001D796A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -57,8 +57,8 @@
 			isa = PBXGroup;
 			children = (
 				3A03F20B2B12AE6B009E67A5 /* Config-TEMPLATE.swift */,
-				3A03F2092B12AAFD009E67A5 /* Config.swift */,
 				3A2D60252B0FED31001D796A /* SyncifyApp.swift */,
+				3A1082FF2B1D580E00D48141 /* Config.swift */,
 				3A2D60272B0FED31001D796A /* ContentView.swift */,
 				3A2D60292B0FED32001D796A /* Assets.xcassets */,
 				3A2D602E2B0FED32001D796A /* Syncify.entitlements */,
@@ -146,8 +146,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				3A2D60282B0FED31001D796A /* ContentView.swift in Sources */,
+				3A1083002B1D580E00D48141 /* Config.swift in Sources */,
 				3A2D60262B0FED31001D796A /* SyncifyApp.swift in Sources */,
-				3A03F20A2B12AAFD009E67A5 /* Config.swift in Sources */,
 				3A03F20C2B12AE6B009E67A5 /* Config-TEMPLATE.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
